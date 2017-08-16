@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-from __future__ import print_function
-
 import requests
 import time
 import random
@@ -61,15 +59,11 @@ def set_cookies(session):
 
 def login(session):
     payload = read_credentials()
-    print(" Authenticating with NITT SonicWall .", end='')
+    print(" Authenticating with NITT SonicWall ...")
     t = session.get(base_url + 'auth1.html') 
-    print(".", end='')
     t = session.post(base_url+'auth.cgi', data=payload)
-    print(".", end='')
     session.get(base_url + "loginStatusTop(eng).html")
-    print(".", end='')
     t = session.post(base_url + "usrHeartbeat.cgi", verify=False)
-    print(".", end='\n')
 
     if is_logged_in(t):
         print(" Logged in successfully !!  :D")
