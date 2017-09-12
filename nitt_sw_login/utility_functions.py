@@ -14,8 +14,10 @@ from string import digits
 from hashlib import md5
 from argparse import ArgumentParser
 
+
 logging.captureWarnings(True)
 base_url = 'https://192.168.20.1/'
+
 
 def new_credentials():
     print()
@@ -28,10 +30,13 @@ def new_credentials():
     print()
     return creds
 
+
 def get_credentials_path(file_name='credentials.txt'):
-    file_dir = os.path.dirname(sys.argv[0])
-    file_path = os.path.join(file_dir, file_name)
-    return file_path
+    # file_dir = os.path.dirname(sys.argv[0])
+    # file_path = os.path.join(file_dir, file_name)
+    # return file_path
+    return file_name
+
 
 def read_credentials():
     print("\n Reading credentials ...")
@@ -51,19 +56,23 @@ def read_credentials():
     creds['pass'] = t['PASSWORD']
     return creds
 
+
 def snooze(factor):
     ONE_MINUTE = 60
     time.sleep(ONE_MINUTE * factor)
+
 
 def generate_cookie():
     seed = ''.join(random.choice(digits) for _ in range(16))
     value = md5(seed.encode()).hexdigest()
     return value
 
+
 def is_logged_in(response):
     if "refresh=true" in response.text:
         return False
     return True
+
 
 def remaining_time(response):
     time = 0
@@ -77,10 +86,12 @@ def remaining_time(response):
             time = 0
     return time
 
+
 def set_cookies(session):
     domain = '192.168.20.1'
     session.cookies.set(name='SessId', value=generate_cookie().upper(), domain=domain)
     session.cookies.set(name='PageSeed', value=generate_cookie(), domain=domain)
+
 
 def login(session):
     payload = read_credentials()
@@ -103,6 +114,7 @@ def login(session):
 
     print(" Login failed !!  :( \n")
     return False
+
 
 def persist(session):
     logged_in = True
@@ -134,9 +146,13 @@ def setup_session():
     set_cookies(s)
     return s
 
+
 def logout(session):
-    print("\n\nYou will be logged out shortly. Please wait ...")
-    update_rem_time(session, 1)
+    print("\n\n You will be logged out shortly. Please wait ...")
+    dummy_payload = {'uName': 'Dummy', 'pass': 'Dummy'}
+    session.post(base_url+'auth.cgi', data=dummy_payload)
+    print(" Thank you")
+
 
 def keep_alive(session):
     logged_in = True
@@ -156,32 +172,4 @@ def update_rem_time(session, rem_time):
         rem_time = 1
     payload = {'maxSessionTime': rem_time}
     t = session.post(base_url + 'userSettings.cgi', data=payload)
-
-arg_parser = ArgumentParser()
-arg_parser.add_argument('--reset-credentials', help='Reset your credentials', action='store_true')
-arg_parser.add_argument('--login-time', help='Limit your logged in session time', type=int, default=0)
-args = arg_parser.parse_args()
-
-if args.reset_credentials:
-    print("\n Enter your new credentials ...")
-    new_credentials()
-
-if (args.login_time < 0 and args.login_time > 180):
-    print("Invalid login time limit. Ignoring.")
-    args.login_time = 0
-
-session = setup_session()
-if login(session):
-    try:
-        if args.login_time:
-            update_rem_time(session, args.login_time)
-            keep_alive(session)
-        else:
-            persist(session)
-    except KeyboardInterrupt:
-        logout(session)
-else:
-    print("\n\nUnable to login into DELL SonicWall !!")
-    print("Make sure that your Username and Password are correct.")
-    print("To update your credentials, execute \"nitt-sw-login --reset-credentials\" ")
-    print("\n")
+    session.post(base_url + "usrHeartbeat.cgi", verify=False)
