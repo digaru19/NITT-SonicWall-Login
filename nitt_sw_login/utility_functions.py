@@ -10,6 +10,8 @@ import random
 import logging
 import json
 import getpass
+import tempfile
+import errno
 from string import digits
 from hashlib import md5
 from argparse import ArgumentParser
@@ -32,10 +34,16 @@ def new_credentials():
 
 
 def get_credentials_path(file_name='credentials.txt'):
-    # file_dir = os.path.dirname(sys.argv[0])
-    # file_path = os.path.join(file_dir, file_name)
-    # return file_path
-    return file_name
+    file_dir = os.path.dirname(sys.argv[0])
+    temp_dir = tempfile.gettempdir()
+    file_path = os.path.join(temp_dir, 'nitt_sw_login')
+    try:
+        os.mkdir(file_path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
+    file_path = os.path.join(file_path, file_name)
+    return file_path
 
 
 def read_credentials():

@@ -32,8 +32,9 @@ def main():
 	        logout(session)
 	else:
 	    print("\n\n Unable to login into DELL SonicWall !!")
-	    print(" Make sure that your Username and Password are correct.")
-	    print(" To update your credentials, execute \"nitt-sw-login --reset-credentials\" ")
+        print(" 1) Please try again.")
+	    print(" 2) Make sure that your Username and Password are correct.")
+	    print("    To update your credentials, execute \"nitt-sw-login --reset-credentials\" ")
 	    print("\n")
 
 if __name__ == '__main__':
