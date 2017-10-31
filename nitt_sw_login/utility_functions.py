@@ -10,7 +10,7 @@ import random
 import logging
 import json
 import getpass
-import tempfile
+import platform
 import errno
 from string import digits
 from hashlib import md5
@@ -34,15 +34,18 @@ def new_credentials():
 
 
 def get_credentials_path(file_name='credentials.txt'):
-    file_dir = os.path.dirname(sys.argv[0])
-    temp_dir = tempfile.gettempdir()
-    file_path = os.path.join(temp_dir, 'nitt_sw_login')
+
+    home_dir = os.path.expanduser('~')
+    dir_name = 'nitt_sw_login'
+    if platform.system() in ['Linux', 'Darwin']:
+        dir_name = '.' + dir_name
+    file_dir = os.path.join(home_dir, dir_name)
     try:
-        os.mkdir(file_path)
+        os.mkdir(file_dir)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
-    file_path = os.path.join(file_path, file_name)
+    file_path = os.path.join(file_dir, file_name)
     return file_path
 
 
@@ -56,7 +59,7 @@ def read_credentials():
             print(" Your credentials file seems to be corrupted.\n Re-enter your credentials ...")
             t = new_credentials()
     else:
-        print(" No credentials found.\n Please update your credentials ...")
+        print(" No credentials found. Please update your credentials.")
         t = new_credentials()
 
     creds = {}
@@ -115,7 +118,8 @@ def login(session):
         if is_logged_in(t):
             print(" Logged in successfully !!  :)")
             current_time = time.strftime("%H:%M:%S  %d-%m-%Y", time.localtime())
-            print(" Login time :- %s \n" % current_time)
+            print(" Login time :- %s " % current_time)
+            print(" (Keep this window open for a persistent connection)")
             return True
         else:
             login_attempt -= 1
@@ -131,7 +135,7 @@ def persist(session):
             t = session.post(base_url + "usrHeartbeat.cgi", verify=False)
             logged_in = is_logged_in(t)
             rem_time = remaining_time(t)
-            if rem_time <= 20:
+            if rem_time <= 30:
                 print("\n Session will expire soon. Logging in again ...")
                 set_cookies(session)
                 logged_in = login(session)
@@ -153,13 +157,6 @@ def setup_session():
     s.verify = False
     set_cookies(s)
     return s
-
-
-def logout(session):
-    print("\n\n You will be logged out shortly. Please wait ...")
-    dummy_payload = {'uName': 'Dummy', 'pass': 'Dummy'}
-    session.post(base_url+'auth.cgi', data=dummy_payload)
-    print(" Thank you")
 
 
 def keep_alive(session):

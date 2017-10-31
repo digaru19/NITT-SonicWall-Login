@@ -19,8 +19,8 @@ maintains a stable internet connection, without any time limit. (Only
 for NIT-Trichy students)
 '''
 
-setup(name='nitt_sw_login',
-      version='1.0',
+setup(name='nitt-sw-login',
+      version='1.0.1',
       author='Shubham Dighe',
       author_email='digsblogger@gmail.com',
       license='BSD 3-clause "New" or "Revised" License',
